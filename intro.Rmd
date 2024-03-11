@@ -1,0 +1,16 @@
+---
+title: "Intro_MD"
+output: html_document
+date: "2024-03-11"
+---
+
+```{r}
+sayHello <- function(name){
+    print(paste("Hello", name))
+}
+```
+
+```{r}
+sayHello("Alicja")
+```
+
