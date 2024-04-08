@@ -1,0 +1,22 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+data_diabetes <- read.csv("diabetes.csv")
+data_dia_num <- data_diabetes[,-9]
+iqrs <- apply(data_dia_num, 2, function(x){IQR(x)})
+q1 <- apply(data_dia_num, 2, function(x){quantile(x, 0.25)})
+q3 <- apply(data_dia_num, 2, function(x){quantile(x, 0.75)})
+```
+
+
+##supervised feature selection 
+
+```{r}
+require(FSelector)
+
+
+```
+
