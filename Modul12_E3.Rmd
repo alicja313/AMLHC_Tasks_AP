@@ -1,0 +1,77 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+install.packages("clusterCrit")
+
+```{r}
+require("clusterCrit")
+require ("fpc")
+```
+
+```{r}
+food_data <- read.csv("food.csv", row.names=1)
+fds <- scale(food_data)
+```
+
+## Clustering
+```{r}
+set.seed(123)
+  kmc <- kmeans(fds, 2)
+  ci <- intCriteria(fds,kmc$cluster, "Silhouette")
+  ci
+```
+
+## PCA and Visualization
+```{r}
+pca <- princomp(fds)
+  data_red <- pca$scores[,1:2]
+  data_red <- data_red * -1
+  plot(data_red[,"Comp.1"], data_red[,"Comp.2"], col=kmc$cluster)
+  text(data_red[,"Comp.1"], data_red[,"Comp.2"], labels=rownames(fds), cex=0.5)
+
+```
+
+##hierarchical clustering
+```{r}
+hcf <- hclust(dist(fds))
+plot(hcf)
+```
+```{r}
+install.packages("gplots")
+library(gplots)
+heatmap.2(fds, scale="none")
+
+```
+##Denisty based clustering
+```{r}
+install.packages("fpc")
+require(fpc)
+dbc <- dbscan(fds, eps=2, MinPts = 3)
+plot(data_red[,"Comp.1"], data_red[,"Comp.2"], col=dbc$cluster)
+text(data_red[,"Comp.1"], data_red[, "Comp.2"], labels=rownames(fds), cex=0.5)
+```
+ 
+```{r}
+
+for(i in 2:5){
+  print(i)
+}
+```
+##Clustering using loop 
+```{r}
+set.seed(123)
+silhouette_coefficients <- numeric(0)
+for (k in 2:5) {
+  kmc <- kmeans(fds, k)
+  ci <- intCriteria(fds, kmc$cluster, "Silhouette")
+  print(paste("Silhouette coefficient for", k, "clusters:", ci))
+  silhouette_coefficients <- c(silhouette_coefficients, ci)
+}
+print("All silhouette coefficients:")
+print(silhouette_coefficients)
+
+```
+ 
+ 
