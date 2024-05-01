@@ -1,0 +1,75 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+#read data 
+```{r}
+data_diabetes <- read.csv("diabetes.csv")
+head(data_diabetes)
+dim(data_diabetes)
+sum(is.na(data_diabetes))
+diabetes_num <- select(data_diabetes, where(is.numeric))
+dim(diabetes_num)
+```
+```{r}
+require(ggplot2)
+require(dplyr)
+require(FSelector)
+require(Hmisc)
+
+```
+## Outlier detection IQR based
+```{r}
+outlier_detection <- function(x){
+  q1 <- quantile(x, 0.25)
+  q3 <- quantile(x, 0.75)
+  iqr <- q3 - q1
+  lower_bound <- q1 - 1.5*iqr
+  upper_bound <- q3 + 1.5*iqr
+  outlier <- x < lower_bound | x > upper_bound
+  return(outlier)
+}
+```
+##Replace outliers with NA and select only complete cases
+```{r}
+diabetes_num <- data_diabetes[, sapply(data_diabetes, is.numeric)]
+outliers <- sapply(diabetes_num, outlier_detection)
+for (col in names(diabetes_num)) {
+  data_diabetes[, col][outliers[, col]] <- NA
+}
+diabetes_complete_cases <- na.omit(data_diabetes)
+dim(diabetes_complete_cases)
+```
+#Dimension of diabetes_complete_cases ist 639, 9
+
+
+
+```{r}
+describe(diabetes_complete_cases)
+```
+# supervised feature selection
+```{r}
+x <- diabetes_complete_cases[, -ncol(diabetes_complete_cases)]  
+y <- diabetes_complete_cases[, ncol(diabetes_complete_cases)]   
+ig <- information.gain(class ~., data = data.frame(x, class = y))
+print(ig)
+```
+##boxplot and distribution plots of one discriminating high and low score-> for preg and insu
+
+```{r}
+ggplot(diabetes_complete_cases, aes(x = class, y = preg)) +
+  geom_boxplot() +
+  labs(title = "Boxplot preg by class", x = "class", y = "preg")
+ggplot(diabetes_complete_cases, aes(x = preg, fill = class)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Distribution plot preg by class", x = "preg", y = "density")
+
+ggplot(diabetes_complete_cases, aes(x = class, y = insu)) +
+  geom_boxplot() +
+  labs(title = "Boxplot insu by class", x = "class", y = "insu")
+ggplot(diabetes_complete_cases, aes(x = insu, fill = class)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Distribution plot insu by class", x = "insu", y = "density")
+
+```
