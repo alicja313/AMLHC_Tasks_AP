@@ -1,0 +1,44 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library("foreign")
+```
+
+```{r}
+require(foreign)
+require(caret)
+```
+##Load Data
+```{r}
+diabetes_data <- read.arff("diabetes.arff")
+head(diabetes_data)
+```
+##Fit and evaluate a generlized linear model
+```{r}
+diabetes_glm <- glm(class ~ . , data=diabetes_data, family = "binomial")
+diabetes_glm
+summary(diabetes_glm)
+```
+```{r}
+par(mfrow=c(2,2))
+plot(diabetes_glm)
+```
+- 
+##train the model
+```{r}
+fitControl <- trainControl(method="cv",number =10)
+glmFit <- train(class ~., data=diabetes_data, method = "glm", preProc=c("center","scale"), trControl = fitControl)
+glmFit
+```
+```{r}
+glmFit2 <- train(class ~ preg + plas + pres + mass+ pedi,data=diabetes_data,method = "glm", preProc=c("center","scale"), trControl = fitControl)
+glmFit2
+```
+##model comparison
+```{r}
+rbind(glmFit$results, glmFit2$results)
+```
+
