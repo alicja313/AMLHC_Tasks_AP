@@ -1,0 +1,70 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+heart_data <- read.csv("heartdata.csv", row.names =1)
+head(data)
+dim(data)
+sum(is.na(data))
+```
+
+```{r}
+require(ggplot2)
+require(caret)
+```
+
+```{r}
+cor(heart_data$biking, heart_data$smoking)
+plot(heart_data$biking, heart_data$smoking)
+hist(heart_data$biking)
+```
+
+##Linearity
+```{r}
+plot(heartdisease ~ biking, data=heart_data)
+```
+
+```{r}
+plot(heartdisease ~ smoking, data=heart_data)
+```
+
+##Evaluate Regression Model
+```{r}
+hd_lm <- lm(heartdisease ~biking + smoking, data=heart_data)
+hd_lm
+summary(hd_lm)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(hd_lm)
+```
+- Residuals show no bias, p-values indicate high significance, 1% increase in biking results in a 0.2001% decrease in heart disease rates, 1% increase in smoking results in an 0.1783% increase in heart rate disease
+##Visualization
+```{r}
+plotting.data <- expand.grid(
+  biking = seq(min(heart_data$biking), max(heart_data$biking), length.out=30),
+  smoking=c(min(heart_data$smoking), mean(heart_data$smoking),max(heart_data$smoking)))
+plotting.data$predicted.y <- predict.lm(hd_lm, newdata = plotting.data)
+plotting.data$smoking <- round(plotting.data$smoking, digits = 2)
+plotting.data$smoking <- as.factor(plotting.data$smoking)
+heart.plot <- ggplot(heart_data, aes(x=biking, y=heartdisease)) +
+  geom_point() +
+  geom_line(data=plotting.data, aes(x=biking, y=predicted.y, color=smoking), linewidth=1.25) +
+  theme_bw() +
+  labs(title = "Rates of heart disease (% of population) \n as a function of biking",
+      x = "Biking to work (% of population)",
+      y = "Heart disease (% of population)",
+      color = "Smoking \n (% of population)")
+
+heart.plot
+```
+
+```{r}
+fitControl <- trainControl(method="cv", number=10)
+lmFit <- train(heartdisease ~., data=heart_data, method = "lm", preProcess=c("center","scale"), trControl = fitControl)
+lmFit
+```
+
